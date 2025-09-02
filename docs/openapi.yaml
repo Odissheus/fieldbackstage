@@ -1,0 +1,466 @@
+openapi: 3.0.3
+info:
+  title: React Field Insights API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/v1
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    UUID: { type: string, format: uuid }
+    WeekRef:
+      type: object
+      properties:
+        id: { type: string, example: "2025-W33" }
+        startsAt: { type: string, format: date }
+        endsAt: { type: string, format: date }
+    InsightCreate:
+      type: object
+      required: [productLineId, territoryId, type]
+      properties:
+        productLineId: { $ref: '#/components/schemas/UUID' }
+        territoryId:   { $ref: '#/components/schemas/UUID' }
+        type:          { type: string, enum: [INSIGHT, CI] }
+        text:          { type: string, nullable: true }
+        audioUrl:      { type: string, format: uri, nullable: true }
+        photoUrl:      { type: string, format: uri, nullable: true }
+        ocrText:       { type: string, nullable: true }
+    UploadPresignResponse:
+      type: object
+      properties:
+        url: { type: string, format: uri }
+        fields: { type: object, additionalProperties: true }
+    ReportItem:
+      type: object
+      properties:
+        id:        { $ref: '#/components/schemas/UUID' }
+        tenantId:  { $ref: '#/components/schemas/UUID' }
+        productLineId: { $ref: '#/components/schemas/UUID' }
+        weekId:    { type: string }
+        executiveSummary: { type: string }
+        ciSummary: { type: string }
+        heatmap:   { type: object }
+        contributors:
+          type: array
+          items: { type: string }
+        urlPdf:    { type: string, format: uri }
+        urlHtml:   { type: string, format: uri }
+    QARequest:
+      type: object
+      properties:
+        query: { type: string }
+        productLineId: { $ref: '#/components/schemas/UUID' }
+        territoryId:   { $ref: '#/components/schemas/UUID' }
+        dateRange:
+          type: object
+          properties:
+            from: { type: string, format: date }
+            to:   { type: string, format: date }
+        includeCI: { type: boolean, default: false }
+    QAResponse:
+      type: object
+      properties:
+        answer: { type: string }
+        citations:
+          type: array
+          items:
+            type: object
+            properties:
+              reportId: { $ref: '#/components/schemas/UUID' }
+              section:  { type: string, enum: [summary, ci] }
+              weekId:   { type: string }
+paths:
+  /auth/me:
+    get:
+      summary: Verifica token e profilo utente
+  /auth/landlord/login:
+    post:
+      summary: Login super admin (landlord)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+  /auth/landing/login:
+    post:
+      summary: Login clienti (landing)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [companyCode, username, password]
+              properties:
+                companyCode: { type: string }
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+  /auth/landing/reset-password:
+    post:
+      summary: Reset password utenti client (invio temp password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [companyCode, username, email]
+              properties:
+                companyCode: { type: string }
+                username: { type: string }
+                email: { type: string, format: email }
+      responses:
+        '200':
+          description: Email inviata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+  /auth/landing/change-password:
+    post:
+      summary: Cambio password utenti client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [companyCode, username, oldPassword, newPassword]
+              properties:
+                companyCode: { type: string }
+                username: { type: string }
+                oldPassword: { type: string }
+                newPassword: { type: string }
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId: { $ref: '#/components/schemas/UUID' }
+                  role:   { type: string }
+  /upload/presign:
+    post:
+      summary: Richiede URL presignato per upload su S3 compatibile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename: { type: string }
+                mime:     { type: string }
+      responses:
+        '200':
+          description: URL presignato
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UploadPresignResponse' }
+  /insights:
+    post:
+      summary: Crea un insight/CI dalla app
+      parameters:
+        - in: header
+          name: X-Tenant-Id
+          required: false
+          schema: { $ref: '#/components/schemas/UUID' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InsightCreate' }
+      responses:
+        '201':
+          description: Creato
+    get:
+      summary: Lista insight grezzi (ultimi 50)
+      parameters:
+        - in: query
+          name: productLineId
+          schema: { $ref: '#/components/schemas/UUID' }
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [INSIGHT, CI]
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200': { description: Ok }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { $ref: '#/components/schemas/UUID' }
+                  status: { type: string, enum: [queued, processed] }
+  /reports:
+    get:
+      summary: Lista report per linea e periodo
+      parameters:
+        - in: header
+          name: X-Tenant-Id
+          required: false
+          schema: { $ref: '#/components/schemas/UUID' }
+      parameters:
+        - in: query
+          name: productLineId
+          schema: { $ref: '#/components/schemas/UUID' }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Elenco
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReportItem' }
+  /reports/{id}:
+    get:
+      summary: Dettaglio report
+      parameters:
+        - in: header
+          name: X-Tenant-Id
+          required: false
+          schema: { $ref: '#/components/schemas/UUID' }
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportItem' }
+  /qa:
+    post:
+      summary: Q&A LLM sui report storici (RAG)
+      parameters:
+        - in: header
+          name: X-Tenant-Id
+          required: false
+          schema: { $ref: '#/components/schemas/UUID' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QARequest' }
+      responses:
+        '200':
+          description: Risposta con citazioni
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QAResponse' }
+  /analytics/weekly:
+    get:
+      summary: KPI e trend 8 settimane
+      parameters:
+        - in: query
+          name: productLineId
+          schema: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200': { description: Ok }
+  /analytics/heatmap:
+    get:
+      summary: Heatmap ultima settimana
+      parameters:
+        - in: query
+          name: productLineId
+          schema: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200': { description: Ok }
+  /admin/tenants:
+    post:
+      summary: Crea tenant (solo super_admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                companyCode: { type: string }
+      responses: { '201': { description: Creato } }
+  /admin/users:
+    post:
+      summary: Crea utente locale (admin/super_admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { $ref: '#/components/schemas/UUID' }
+                email: { type: string, format: email }
+                fullName: { type: string }
+      responses: { '201': { description: Creato } }
+  /admin/users/{id}/roles:
+    post:
+      summary: Assegna ruolo su tenant all'utente
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId, role]
+              properties:
+                tenantId: { $ref: '#/components/schemas/UUID' }
+                role: { type: string, enum: [super_admin, admin, editor, viewer] }
+                productLineIds:
+                  type: array
+                  items: { $ref: '#/components/schemas/UUID' }
+      responses: { '201': { description: Creato } }
+  /admin/jobs/generate-weekly-reports:
+    post:
+      summary: Trigger genera report settimanale (MVP sincrono)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId, productLineId]
+              properties:
+                tenantId: { $ref: '#/components/schemas/UUID' }
+                productLineId: { $ref: '#/components/schemas/UUID' }
+                weekId: { type: string, example: '2025-W33' }
+      responses:
+        '200': { description: Ok }
+  /admin/jobs/purge-ephemeral:
+    post:
+      summary: Trigger purge dati grezzi antecedenti a data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [before]
+              properties:
+                before: { type: string, format: date }
+      responses:
+        '200': { description: Ok }
+  /product-lines:
+    get:
+      summary: Elenco linee del tenant corrente
+      responses:
+        '200':
+          description: Elenco
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { $ref: '#/components/schemas/UUID' }
+                    name: { type: string }
+                    active: { type: string }
+  /admin/tenants/{tenantId}/product-lines:
+    post:
+      summary: Crea linea di venditori per un tenant
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '201':
+          description: Creato
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { $ref: '#/components/schemas/UUID' }
+                  name: { type: string }
+    get:
+      summary: Elenco linee per tenant (admin)
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200':
+          description: Elenco
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { $ref: '#/components/schemas/UUID' }
+                    name: { type: string }
+                    active: { type: string }
+  
+

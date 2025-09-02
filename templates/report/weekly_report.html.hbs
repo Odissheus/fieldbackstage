@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Report {{tenant.name}} — {{product_line.name}} — {{week.id}}</title>
+  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <h1>Report Settimanale — {{tenant.name}} — {{product_line.name}} — {{week.id}}</h1>
+
+  <section>
+    <h2>Executive Summary</h2>
+    <ul>
+      {{#each executive_summary.bullets}}
+        <li>{{this}}</li>
+      {{/each}}
+    </ul>
+  </section>
+
+  <section>
+    <h2>KPI</h2>
+    <div class="chips">
+      <span class="chip">Insight: {{kpi.insightsCount}}</span>
+      <span class="chip">Positivi: {{kpi.positive}}</span>
+      <span class="chip">Neutri: {{kpi.neutral}}</span>
+      <span class="chip">Negativi: {{kpi.negative}}</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Heatmap Insight per Territorio</h2>
+    {{#if heatmap.image_url}}
+      <img src="{{heatmap.image_url}}" alt="Heatmap" />
+    {{else}}
+      <div class="chips">
+        {{#each heatmap.bins}}
+          <span class="chip">{{this.territoryName}}: {{this.value}}</span>
+        {{/each}}
+      </div>
+    {{/if}}
+  </section>
+
+  <section>
+    <h2>Competitive Intelligence</h2>
+    <ul>
+      {{#each ci_summary.bullets}}
+        <li>{{this}}</li>
+      {{/each}}
+    </ul>
+    <div class="thumbs">
+      {{#each ci_summary.thumbnails}}
+        <figure>
+          <img src="{{this.url}}" alt="{{this.caption}}" />
+          <figcaption>{{this.caption}}</figcaption>
+        </figure>
+      {{/each}}
+    </div>
+  </section>
+
+  <section>
+    <h2>Contributori</h2>
+    <p class="contributors">
+      {{#each contributors}}
+        {{this}}{{#unless @last}}, {{/unless}}
+      {{/each}}
+    </p>
+  </section>
+
+  <footer>
+    Generato: {{generated_at}} (Europe/Rome) — Hash: {{doc_hash}}
+  </footer>
+</body>
+</html>
+

@@ -1,0 +1,54 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: fieldback
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build: .
+    environment:
+      # Database
+      DB_URL: postgresql+psycopg2://postgres:postgres@db:5432/fieldback
+      
+      # Security
+      JWT_SECRET: dev-secret-change-me
+      SUPERADMIN_USERNAME: fieldbackmaster
+      SUPERADMIN_PASSWORD: Leader.1986
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5176
+      
+      # SendGrid Email
+      SMTP_HOST: smtp.sendgrid.net
+      SMTP_PORT: 587
+      SMTP_USER: apikey
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: danielepili@react-company.com
+      
+      # AI/ML Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: gpt-4o-mini
+      OPENAI_WHISPER_MODEL: whisper-1
+      ENABLE_AI_PROCESSING: true
+      CHROMADB_PATH: /app/data/chromadb
+      
+      # Storage (S3)
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      S3_BUCKET: ${S3_BUCKET:-media}
+      
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ai_data:/app/data
+volumes:
+  pgdata:
+  ai_data:
+
