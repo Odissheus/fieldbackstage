@@ -1,0 +1,80 @@
+[1mdiff --git a/web-admin/src/main.tsx b/web-admin/src/main.tsx[m
+[1mindex eacc675..782792f 100644[m
+[1m--- a/web-admin/src/main.tsx[m
+[1m+++ b/web-admin/src/main.tsx[m
+[36m@@ -6,7 +6,7 @@[m [mimport './index.css'[m
+ import { AuthProvider, useAuth } from './modules/AuthContext'[m
+ import { LoginPage } from './pages/Login'[m
+ import { DashboardPage } from './pages/Dashboard'[m
+[31m-import { TenantsPage } from './pages/Tenants'[m
+[32m+[m[32mimport { TenantListPage } from './pages/TenantList'[m
+ import { ProductLinesPage } from './pages/ProductLines'[m
+ import { UsersPage } from './pages/Users'[m
+ import { JobsPage } from './pages/Jobs'[m
+[36m@@ -21,7 +21,7 @@[m [mconst router = createBrowserRouter([[m
+   { path: '/', element: <Navigate to="/dashboard" replace /> },[m
+   { path: '/login', element: <LoginPage /> },[m
+   { path: '/dashboard', element: <RequireAuth><DashboardPage /></RequireAuth> },[m
+[31m-  { path: '/tenants', element: <RequireAuth><TenantsPage /></RequireAuth> },[m
+[32m+[m[32m  { path: '/tenants', element: <RequireAuth><TenantListPage /></RequireAuth> },[m
+   { path: '/lines', element: <RequireAuth><ProductLinesPage /></RequireAuth> },[m
+   { path: '/users', element: <RequireAuth><UsersPage /></RequireAuth> },[m
+   { path: '/jobs', element: <RequireAuth><JobsPage /></RequireAuth> },[m
+[1mdiff --git a/web-admin/src/modules/App.tsx b/web-admin/src/modules/App.tsx[m
+[1mindex af591c2..7d8c3f7 100644[m
+[1m--- a/web-admin/src/modules/App.tsx[m
+[1m+++ b/web-admin/src/modules/App.tsx[m
+[36m@@ -85,6 +85,14 @@[m [mexport const App: React.FC = () => {[m
+     setMessage(JSON.stringify(j))[m
+   }[m
+ [m
+[32m+[m[32m  // Aggiungere questa funzione[m
+[32m+[m[32m  const fetchTenants = async () => {[m
+[32m+[m[32m    const response = await fetch('http://localhost:8000/v1/admin/tenants', {[m
+[32m+[m[32m      headers: { Authorization: `Bearer ${token}` }[m
+[32m+[m[32m    });[m
+[32m+[m[32m    return response.json();[m
+[32m+[m[32m  };[m
+[32m+[m
+   return ([m
+     <div style={{ padding: 16, fontFamily: 'system-ui, Arial' }}>[m
+       <h2>Landlord console</h2>[m
+[1mdiff --git a/web-admin/src/pages/Tenants.tsx b/web-admin/src/pages/Tenants.tsx[m
+[1mdeleted file mode 100644[m
+[1mindex ef30bd6..0000000[m
+[1m--- a/web-admin/src/pages/Tenants.tsx[m
+[1m+++ /dev/null[m
+[36m@@ -1,33 +0,0 @@[m
+[31m-import React, { useState } from 'react'[m
+[31m-import { Layout } from '../components/Layout'[m
+[31m-import { apiFetch } from '../modules/api'[m
+[31m-[m
+[31m-export const TenantsPage: React.FC = () => {[m
+[31m-  const [name, setName] = useState('Nuovo Cliente')[m
+[31m-  const [companyCode, setCompanyCode] = useState('ACME001')[m
+[31m-  const [out, setOut] = useState('')[m
+[31m-[m
+[31m-  const createTenant = async () => {[m
+[31m-    const j = await apiFetch('/admin/tenants', { method: 'POST', body: JSON.stringify({ name, companyCode }) })[m
+[31m-    setOut(JSON.stringify(j, null, 2))[m
+[31m-  }[m
+[31m-[m
+[31m-  return ([m
+[31m-    <Layout>[m
+[31m-      <div className="bg-white border rounded p-4 max-w-xl space-y-3">[m
+[31m-        <h2 className="text-lg font-semibold">Crea tenant</h2>[m
+[31m-        <div>[m
+[31m-          <label className="block text-sm">Nome</label>[m
+[31m-          <input className="mt-1 w-full border rounded px-3 py-2" value={name} onChange={e=>setName(e.target.value)} />[m
+[31m-        </div>[m
+[31m-        <div>[m
+[31m-          <label className="block text-sm">Company code</label>[m
+[31m-          <input className="mt-1 w-full border rounded px-3 py-2" value={companyCode} onChange={e=>setCompanyCode(e.target.value)} />[m
+[31m-        </div>[m
+[31m-        <button className="bg-black text-white rounded px-4 py-2" onClick={createTenant}>Crea</button>[m
+[31m-        {out && <pre className="bg-gray-50 border rounded p-3 text-sm">{out}</pre>}[m
+[31m-      </div>[m
+[31m-    </Layout>[m
+[31m-  )[m
+[31m-}[m
+[31m-[m

@@ -6,7 +6,7 @@ import './index.css'
 import { AuthProvider, useAuth } from './modules/AuthContext'
 import { LoginPage } from './pages/Login'
 import { DashboardPage } from './pages/Dashboard'
-import { TenantsPage } from './pages/Tenants'
+import { TenantListPage } from './pages/TenantList'
 import { ProductLinesPage } from './pages/ProductLines'
 import { UsersPage } from './pages/Users'
 import { JobsPage } from './pages/Jobs'
@@ -21,7 +21,7 @@ const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/dashboard" replace /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/dashboard', element: <RequireAuth><DashboardPage /></RequireAuth> },
-  { path: '/tenants', element: <RequireAuth><TenantsPage /></RequireAuth> },
+  { path: '/tenants', element: <RequireAuth><TenantListPage /></RequireAuth> },
   { path: '/lines', element: <RequireAuth><ProductLinesPage /></RequireAuth> },
   { path: '/users', element: <RequireAuth><UsersPage /></RequireAuth> },
   { path: '/jobs', element: <RequireAuth><JobsPage /></RequireAuth> },

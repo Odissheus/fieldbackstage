@@ -85,6 +85,14 @@ export const App: React.FC = () => {
     setMessage(JSON.stringify(j))
   }
 
+  // Aggiungere questa funzione
+  const fetchTenants = async () => {
+    const response = await fetch('/api/admin/tenants', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.json();
+  };
+
   return (
     <div style={{ padding: 16, fontFamily: 'system-ui, Arial' }}>
       <h2>Landlord console</h2>
