@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from server.db import get_session
-from server.models import ProductLine
-from server.deps import require_role, resolve_tenant_id, get_current_user
+from db import get_session
+from models import ProductLine
+from deps import require_role, resolve_tenant_id, get_current_user
 
 
 router = APIRouter(tags=["product-lines"])

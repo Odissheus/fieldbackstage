@@ -2,10 +2,10 @@ import datetime as dt
 import hashlib
 from pathlib import Path
 from sqlalchemy.orm import Session
-from server.report_render import render_weekly_report
-from server.report_pdf import html_to_pdf_bytes
-from server.db import get_session, init_db
-from server.models import InsightRaw, WeeklyReport
+from report_render import render_weekly_report
+from report_pdf import html_to_pdf_bytes
+from db import get_session, init_db
+from models import InsightRaw, WeeklyReport
 
 
 def build_context_example():
@@ -115,7 +115,7 @@ def run_weekly(product_line_id: str = "pl-demo", week_id: str = "2025-W33", tena
     
     # Index report for RAG Q&A system
     try:
-        from .ai_services import index_report_for_rag
+        from ai_services import index_report_for_rag
         index_report_for_rag(
             report_id=wr.id,
             executive_summary=wr.executive_summary,

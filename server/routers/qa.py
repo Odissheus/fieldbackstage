@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from server.db import get_session
-from server.models import WeeklyReport
-from server.schemas import QARequest, QAResponse, QACitation
-from server.deps import get_current_user, resolve_tenant_id, rate_limit
-from server.config import settings
-from server.ai_services import qa_with_rag
+from db import get_session
+from models import WeeklyReport
+from schemas import QARequest, QAResponse, QACitation
+from deps import get_current_user, resolve_tenant_id, rate_limit
+from config import settings
+from ai_services import qa_with_rag
 import asyncio
 import logging
 

@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from server.schemas import InsightCreate
-from server.models import InsightRaw
-from server.db import get_session
-from server.deps import get_current_user
+from schemas import InsightCreate
+from models import InsightRaw
+from db import get_session
+from deps import get_current_user
 from fastapi import Header, Depends
-from server.deps import resolve_tenant_id
+from deps import resolve_tenant_id
 from sqlalchemy import select
-from server.processing_queue import enqueue_insight
+from processing_queue import enqueue_insight
 
 
 router = APIRouter(tags=["insights"])

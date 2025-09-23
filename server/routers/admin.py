@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from server.db import get_session
-from server.models import Tenant, User, UserTenantRole, LoginAccount, InsightRaw
-from server.deps import require_role
+from db import get_session
+from models import Tenant, User, UserTenantRole, LoginAccount, InsightRaw
+from deps import require_role
 from hashlib import sha256
 from datetime import datetime
-from server.jobs.weekly_report_job import run_weekly
+from jobs.weekly_report_job import run_weekly
 import hashlib
 
 
@@ -39,7 +39,7 @@ def create_user(body: dict, session: Session = Depends(get_session), user=Depend
     full_name = (body or {}).get("fullName")
     if not uid:
         # se non fornito, non possiamo creare credenziali IdP qui; creiamo solo il record
-        from server.models import uuid_str
+        from models import uuid_str
         uid = uuid_str()
     u = User(id=uid, email=email, full_name=full_name)
     session.add(u)

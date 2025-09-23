@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 import uuid
 import boto3
 from botocore.client import Config
-from server.config import settings
-from server.deps import rate_limit
+from config import settings
+from deps import rate_limit
 
 
 router = APIRouter(tags=["upload"])

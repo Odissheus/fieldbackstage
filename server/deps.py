@@ -2,9 +2,9 @@ from fastapi import Header, HTTPException, Depends
 from typing import Optional
 from sqlalchemy.orm import Session
 from jose import jwt
-from .db import get_session
-from .models import UserTenantRole
-from .config import settings
+from db import get_session
+from models import UserTenantRole
+from config import settings
 import time
 from fastapi import Request
 
@@ -20,7 +20,7 @@ def _decode_bearer(authorization: Optional[str]) -> dict:
     except Exception:
         pass
     # Fallback to JWKS if configured
-    from server.routers.auth import _get_key  # local import to avoid cycle
+    from routers.auth import _get_key  # local import to avoid cycle
     try:
         headers = jwt.get_unverified_header(token)
         key = _get_key(headers.get("kid", ""))

@@ -2,17 +2,17 @@ from fastapi import APIRouter, Header, HTTPException, Depends
 from jose import jwt
 import httpx
 from functools import lru_cache
-from server.config import settings
-from server.db import get_session
+from config import settings
+from db import get_session
 from sqlalchemy.orm import Session
-from server.models import User, LoginAccount, Tenant
+from models import User, LoginAccount, Tenant
 from datetime import datetime, timedelta
 from jose import jwt as jose_jwt
 from fastapi import Body
 from hashlib import sha256
-from server.email import send_mail
-from server.deps import rate_limit
-from server.config import settings
+from email import send_mail
+from deps import rate_limit
+from config import settings
 
 
 router = APIRouter(tags=["auth"])

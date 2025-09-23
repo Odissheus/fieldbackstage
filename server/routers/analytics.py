@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from server.db import get_session
-from server.models import WeeklyReport
-from server.deps import resolve_tenant_id, get_current_user
+from db import get_session
+from models import WeeklyReport
+from deps import resolve_tenant_id, get_current_user
 
 router = APIRouter(tags=["analytics"])
 

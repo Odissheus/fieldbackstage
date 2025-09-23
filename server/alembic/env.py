@@ -10,8 +10,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from server.db import Base  # noqa: E402
-from server import models  # noqa: F401,E402
+from db import Base  # noqa: E402
+import models  # noqa: F401,E402
 
 target_metadata = Base.metadata
 
