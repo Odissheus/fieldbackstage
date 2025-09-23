@@ -1,14 +1,14 @@
 from fastapi import FastAPI
-from server.routers import auth, upload, insights, ci, reports, qa, admin
-from server.routers import product_lines
-from server.routers import analytics, processing
+from routers import auth, upload, insights, ci, reports, qa, admin
+from routers import product_lines
+from routers import analytics, processing
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from server.db import init_db
-from server.config import settings
-from server.processing_queue import start_worker_once
-from server.ai_services import init_ai_services
+from db import init_db
+from config import settings
+from processing_queue import start_worker_once
+from ai_services import init_ai_services
 
 
 app = FastAPI(title="React Field Insights API", version="1.0.0", openapi_url="/v1/openapi.json")

@@ -12,6 +12,13 @@ import hashlib
 router = APIRouter(tags=["admin"])
 
 
+@router.get("/admin/tenants")
+def list_tenants(session: Session = Depends(get_session), user=Depends(require_role("super_admin"))):
+    """List all tenants"""
+    tenants = session.query(Tenant).all()
+    return [{"id": str(t.id), "name": t.name, "companyCode": t.company_code} for t in tenants]
+
+
 @router.post("/admin/tenants", status_code=201)
 def create_tenant(body: dict, session: Session = Depends(get_session), user=Depends(require_role("super_admin"))):
     name = (body or {}).get("name")
